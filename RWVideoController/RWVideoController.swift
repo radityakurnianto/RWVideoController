@@ -28,6 +28,14 @@ enum ScreenState {
     case full
 }
 
+protocol RWVideoDelegate {
+    func video(_ player: RWVideoController, currentDuration: CMTime, totalDuration: CMTime) -> Void
+    func videoStateDidChange(_ player: RWVideoController, state: PlayerState) -> Void
+    func videoDidEnterFullscreen() -> Void
+    func videoDidExitFullscreen() -> Void
+    func video(_ player: RWVideoController, sliderState: SliderState) -> Void
+}
+
 class RWVideoController: UIViewController {
     fileprivate var videoUrlString: String?
     fileprivate var videoPlayer: AVPlayer?
@@ -35,11 +43,13 @@ class RWVideoController: UIViewController {
     fileprivate var videoLayer: AVPlayerLayer?
     fileprivate var currentPlayhead: CMTime = .zero
     fileprivate var timeObserverToken: Any?
+    fileprivate var fullscreenController: RWVideoController?
     
     var videoState: PlayerState = .ready
     var sliderState: SliderState = .sliderIdle
     var screenState: ScreenState = .normal
     var videoQualities: [[String: Any]]?
+    var delegate: RWVideoDelegate?
     
     @IBOutlet weak var startTimeLabel: UILabel!
     @IBOutlet weak var endTimeLabel: UILabel!
@@ -134,25 +144,18 @@ class RWVideoController: UIViewController {
     
     @IBAction func controllFullscreenAction(_ sender: Any) {
         if screenState == .full {
-            self.pause()
-            self.dismiss(animated: true) {
-            }
-            return
+            exitFullscreen()
+        } else {
+            enterFullscreen()
         }
-        
-        guard let videoUrl = self.videoUrlString else { return }
-        let controller = RWVideoController(defaultVideo: videoUrl, qualities: self.videoQualities)
-        controller.videoLayer?.frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.width * 0.5625)
-        controller.screenState = .full
-        controller.seekPlayhead(to: self.currentPlayhead)
-        
-        self.pause()
-        
-        self.parent?.present(controller, animated: false, completion: nil)
     }
     
     @IBAction func controlQualityAction(_ sender: Any) {
         showQualityControl()
+    }
+    
+    @objc func canRotate() -> Void {
+        // do nothing
     }
 }
 
@@ -176,6 +179,7 @@ extension RWVideoController {
         player.play()
         controlButton.setTitle("Pause", for: .normal)
         videoState = .played
+        delegate?.videoStateDidChange(self, state: videoState)
     }
     
     fileprivate func pause() {
@@ -183,12 +187,42 @@ extension RWVideoController {
         player.pause()
         controlButton.setTitle("Play", for: .normal)
         videoState = .paused
+        delegate?.videoStateDidChange(self, state: videoState)
     }
     
     fileprivate func seekPlayhead(to: CMTime) {
         guard let player = self.videoPlayer else { return }
         player.seek(to: to, toleranceBefore: .zero, toleranceAfter: .zero) { (status) in
             self.play()
+        }
+    }
+    
+    fileprivate func enterFullscreen() -> Void {
+        guard let videoUrl = self.videoUrlString else { return }
+        
+        fullscreenController = RWVideoController(defaultVideo: videoUrl, qualities: self.videoQualities)
+        fullscreenController?.delegate = delegate
+        fullscreenController?.videoLayer?.frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.width * 0.5625)
+        fullscreenController?.screenState = .full
+        fullscreenController?.seekPlayhead(to: self.currentPlayhead)
+        
+        self.pause()
+        delegate?.videoDidEnterFullscreen()
+        
+        if let controller = fullscreenController {
+            self.parent?.present(controller, animated: false, completion: nil)
+        }
+    }
+    
+    fileprivate func exitFullscreen() -> Void {
+        screenState = .normal
+        delegate?.videoDidExitFullscreen()
+        self.pause()
+        self.dismiss(animated: true) {
+            self.fullscreenController?.delegate = nil
+            self.fullscreenController = nil
+            self.delegate?.videoDidExitFullscreen()
+            UIDevice.current.setValue(Int(UIInterfaceOrientation.portrait.rawValue), forKey: "orientation")
         }
     }
 }
@@ -252,6 +286,8 @@ extension RWVideoController {
                         self.currentPlayhead = player.currentTime()
                         self.controlSlider.setValue(Float(currentDuration), animated: true)
                         self.getReadableFormat(currendSeconds: Int(currentDuration), duration: Int(seconds))
+                        
+                        self.delegate?.video(self, currentDuration: self.currentPlayhead, totalDuration: duration)
                     }
                 }
             }
@@ -290,6 +326,7 @@ extension RWVideoController {
         
         player.pause()
         sliderState = .sliderBeingSeek
+        delegate?.video(self, sliderState: sliderState)
         
         let seconds: Int64 = Int64(playbackSlider.value)
         let targetTime: CMTime = CMTimeMakeWithSeconds(Float64(Float(seconds)), preferredTimescale: 1)
@@ -299,6 +336,7 @@ extension RWVideoController {
         if player.rate == 0 {
             player.play()
             sliderState = .sliderIdle
+            delegate?.video(self, sliderState: sliderState)
         }
     }
 }
@@ -333,31 +371,28 @@ extension RWVideoController: UITableViewDelegate {
     }
 }
 
-extension UINavigationController {
-    
-    override open var shouldAutorotate: Bool {
-        get {
-            if let visibleVC = visibleViewController {
-                return visibleVC.shouldAutorotate
+extension AppDelegate {
+    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        if let rootViewController = self.topViewControllerWithRootViewController(rootViewController: window?.rootViewController) as? RWVideoController {
+            if rootViewController.responds(to: #selector(RWVideoController.canRotate)) {
+                // Unlock landscape view orientations for this view controller
+                return .allButUpsideDown
             }
-            return super.shouldAutorotate
         }
+        
+        // Only allow portrait (standard behaviour)
+        return .portrait;
     }
     
-    override open var preferredInterfaceOrientationForPresentation: UIInterfaceOrientation{
-        get {
-            if let visibleVC = visibleViewController {
-                return visibleVC.preferredInterfaceOrientationForPresentation
-            }
-            return super.preferredInterfaceOrientationForPresentation
+    func topViewControllerWithRootViewController(rootViewController: UIViewController!) -> UIViewController? {
+        if (rootViewController == nil) { return nil }
+        if rootViewController.isKind(of: UITabBarController.self) {
+            return topViewControllerWithRootViewController(rootViewController: (rootViewController as! UITabBarController).selectedViewController)
+        } else if (rootViewController.isKind(of: UINavigationController.self)) {
+            return topViewControllerWithRootViewController(rootViewController: (rootViewController as! UINavigationController).visibleViewController)
+        } else if (rootViewController.presentedViewController != nil) {
+            return topViewControllerWithRootViewController(rootViewController: rootViewController.presentedViewController)
         }
+        return rootViewController
     }
-    
-    override open var supportedInterfaceOrientations: UIInterfaceOrientationMask{
-        get {
-            if let visibleVC = visibleViewController {
-                return visibleVC.supportedInterfaceOrientations
-            }
-            return super.supportedInterfaceOrientations
-        }
-    }}
+}
