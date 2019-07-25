@@ -28,14 +28,6 @@ enum ScreenState {
     case full
 }
 
-protocol RWVideoDelegate {
-    func video(_ player: RWVideoController, currentDuration: CMTime, totalDuration: CMTime) -> Void
-    func videoStateDidChange(_ player: RWVideoController, state: PlayerState) -> Void
-    func videoDidEnterFullscreen() -> Void
-    func videoDidExitFullscreen() -> Void
-    func video(_ player: RWVideoController, sliderState: SliderState) -> Void
-}
-
 class RWVideoController: UIViewController {
     fileprivate var videoUrlString: String?
     fileprivate var videoPlayer: AVPlayer?
@@ -44,12 +36,39 @@ class RWVideoController: UIViewController {
     fileprivate var currentPlayhead: CMTime = .zero
     fileprivate var timeObserverToken: Any?
     fileprivate var fullscreenController: RWVideoController?
+    fileprivate var timer = Timer()
+    fileprivate let timerDuration = 2.0
+    
+    lazy var tap: UITapGestureRecognizer = { [unowned self] in
+        let gesture = UITapGestureRecognizer(target: self, action: #selector(didTap(sender:)))
+        gesture.numberOfTapsRequired = 1
+        gesture.numberOfTouchesRequired = 1
+        print("gesture_created")
+        return gesture
+    }()
     
     var videoState: PlayerState = .ready
     var sliderState: SliderState = .sliderIdle
     var screenState: ScreenState = .normal
     var videoQualities: [[String: Any]]?
     var delegate: RWVideoDelegate?
+    var autoplay: Bool = false {
+        didSet {
+            if autoplay {
+                self.play()
+            }
+        }
+    }
+    
+    var controlShow: Bool = false {
+        didSet {
+            if controlShow {
+                self.showControl()
+            } else {
+                self.hideControl()
+            }
+        }
+    }
     
     @IBOutlet weak var startTimeLabel: UILabel!
     @IBOutlet weak var endTimeLabel: UILabel!
@@ -84,7 +103,6 @@ class RWVideoController: UIViewController {
         
         self.videoUrlString = defaultVideo
         self.videoQualities = qualities
-        
         self.setupQuality()
         self.createPlayer()
     }
@@ -115,6 +133,12 @@ class RWVideoController: UIViewController {
         super.viewWillAppear(true)
         self.view.backgroundColor = .black
         self.controlFullscreenButton.setTitle(screenState == .normal ? "Fullscreen" : "Exit fullscreen", for: .normal)
+        NotificationCenter.default.addObserver(self, selector: #selector(playerDidFinish), name: .AVPlayerItemDidPlayToEndTime, object: nil)
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(true)
+        NotificationCenter.default.removeObserver(self)
     }
     
     override func viewDidLoad() {
@@ -128,6 +152,10 @@ class RWVideoController: UIViewController {
         layer.frame = self.controlLayerView.frame
     }
     
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
     override var shouldAutorotate: Bool {
         return true
     }
@@ -135,11 +163,13 @@ class RWVideoController: UIViewController {
     @IBAction func controlButtonAction(_ sender: Any) {
         guard let player = self.videoPlayer else { return }
         
+        stopTimer()
         if player.rate == 1 {
             pause()
         } else {
             play()
         }
+        runTimer()
     }
     
     @IBAction func controllFullscreenAction(_ sender: Any) {
@@ -157,6 +187,10 @@ class RWVideoController: UIViewController {
     @objc func canRotate() -> Void {
         // do nothing
     }
+    
+    @objc func playerDidFinish() -> Void {
+        delegate?.video(didFinishPlaying: self)
+    }
 }
 
 extension RWVideoController {
@@ -172,6 +206,15 @@ extension RWVideoController {
         self.view.layer.insertSublayer(layer, at: 0)
         
         self.setupSlider()
+        self.addTapGesture()
+    }
+    
+    func runTimer() -> Void {
+        timer = Timer.scheduledTimer(timeInterval: timerDuration, target: self, selector: #selector(hideControl), userInfo: nil, repeats: false)
+    }
+    
+    func stopTimer() -> Void {
+        timer.invalidate()
     }
     
     fileprivate func play() {
@@ -200,17 +243,19 @@ extension RWVideoController {
     fileprivate func enterFullscreen() -> Void {
         guard let videoUrl = self.videoUrlString else { return }
         
-        fullscreenController = RWVideoController(defaultVideo: videoUrl, qualities: self.videoQualities)
-        fullscreenController?.delegate = delegate
-        fullscreenController?.videoLayer?.frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.width * 0.5625)
-        fullscreenController?.screenState = .full
-        fullscreenController?.seekPlayhead(to: self.currentPlayhead)
-        
-        self.pause()
-        delegate?.videoDidEnterFullscreen()
-        
-        if let controller = fullscreenController {
-            self.parent?.present(controller, animated: false, completion: nil)
+        DispatchQueue.main.async {
+            self.fullscreenController = RWVideoController(defaultVideo: videoUrl, qualities: self.videoQualities)
+            self.fullscreenController?.delegate = self.delegate
+            self.fullscreenController?.videoLayer?.frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.width * 0.5625)
+            self.fullscreenController?.screenState = .full
+            self.fullscreenController?.seekPlayhead(to: self.currentPlayhead)
+            
+            self.pause()
+            self.delegate?.videoDidEnterFullscreen()
+            
+            if let controller = self.fullscreenController {
+                self.parent?.present(controller, animated: true, completion: nil)
+            }
         }
     }
     
@@ -269,7 +314,6 @@ extension RWVideoController {
     
     fileprivate func setupSlider() {
         self.controlSlider.minimumValue = 0
-        self.controlSlider.isContinuous = false
         self.controlSlider.addTarget(self, action: #selector(playbackSliderChanged(_:)), for: .valueChanged)
         guard let player = self.videoPlayer, let duration = player.currentItem?.asset.duration else { return }
         
@@ -324,19 +368,24 @@ extension RWVideoController {
     @objc fileprivate func playbackSliderChanged(_ playbackSlider: UISlider) {
         guard let player = self.videoPlayer else { return }
         
-        player.pause()
-        sliderState = .sliderBeingSeek
-        delegate?.video(self, sliderState: sliderState)
+        if playbackSlider.isTracking {
+            stopTimer()
+            pause()
+            sliderState = .sliderBeingSeek
+            delegate?.video(self, sliderState: sliderState)
+            return
+        }
         
         let seconds: Int64 = Int64(playbackSlider.value)
         let targetTime: CMTime = CMTimeMakeWithSeconds(Float64(Float(seconds)), preferredTimescale: 1)
         
-        player.seek(to: targetTime)
-        
-        if player.rate == 0 {
-            player.play()
-            sliderState = .sliderIdle
-            delegate?.video(self, sliderState: sliderState)
+        player.seek(to: targetTime) { (seekComplete) in
+            if player.rate == 0 {
+                self.play()
+                self.runTimer()
+                self.sliderState = .sliderIdle
+                self.delegate?.video(self, sliderState: self.sliderState)
+            }
         }
     }
 }

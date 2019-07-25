@@ -41,6 +41,10 @@ class ViewController: UIViewController {
 }
 
 extension ViewController: RWVideoDelegate {
+    func video(didFinishPlaying: RWVideoController) {
+        print("didFinishPlaying")
+    }
+    
     func videoDidEnterFullscreen() {
         print("videoDidEnterFullscreen")
     }

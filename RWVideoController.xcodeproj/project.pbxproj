@@ -15,6 +15,8 @@
 		E031927122CB199F00E7FA61 /* RWVideoController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E031926F22CB199F00E7FA61 /* RWVideoController.swift */; };
 		E031927222CB199F00E7FA61 /* RWVideoController.xib in Resources */ = {isa = PBXBuildFile; fileRef = E031927022CB199F00E7FA61 /* RWVideoController.xib */; };
 		E0D7FD9E22CC650E0060908D /* TestViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0D7FD9D22CC650E0060908D /* TestViewController.swift */; };
+		E0E9FACF22E1A55E00CF567B /* RWVideoProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0E9FACE22E1A55E00CF567B /* RWVideoProtocol.swift */; };
+		E0E9FAD222E1C39A00CF567B /* RWVideoGestureHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0E9FAD122E1C39A00CF567B /* RWVideoGestureHandler.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +30,8 @@
 		E031926F22CB199F00E7FA61 /* RWVideoController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RWVideoController.swift; sourceTree = "<group>"; };
 		E031927022CB199F00E7FA61 /* RWVideoController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = RWVideoController.xib; sourceTree = "<group>"; };
 		E0D7FD9D22CC650E0060908D /* TestViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestViewController.swift; sourceTree = "<group>"; };
+		E0E9FACE22E1A55E00CF567B /* RWVideoProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RWVideoProtocol.swift; sourceTree = "<group>"; };
+		E0E9FAD122E1C39A00CF567B /* RWVideoGestureHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RWVideoGestureHandler.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,9 +70,19 @@
 				E031926222CB128A00E7FA61 /* Assets.xcassets */,
 				E031926422CB128A00E7FA61 /* LaunchScreen.storyboard */,
 				E031926722CB128A00E7FA61 /* Info.plist */,
+				E0E9FAD022E1A5A900CF567B /* RWVideoController */,
+				E0D7FD9D22CC650E0060908D /* TestViewController.swift */,
+			);
+			path = RWVideoController;
+			sourceTree = "<group>";
+		};
+		E0E9FAD022E1A5A900CF567B /* RWVideoController */ = {
+			isa = PBXGroup;
+			children = (
 				E031926F22CB199F00E7FA61 /* RWVideoController.swift */,
 				E031927022CB199F00E7FA61 /* RWVideoController.xib */,
-				E0D7FD9D22CC650E0060908D /* TestViewController.swift */,
+				E0E9FACE22E1A55E00CF567B /* RWVideoProtocol.swift */,
+				E0E9FAD122E1C39A00CF567B /* RWVideoGestureHandler.swift */,
 			);
 			path = RWVideoController;
 			sourceTree = "<group>";
@@ -148,7 +162,9 @@
 				E031927122CB199F00E7FA61 /* RWVideoController.swift in Sources */,
 				E031925E22CB128800E7FA61 /* ViewController.swift in Sources */,
 				E0D7FD9E22CC650E0060908D /* TestViewController.swift in Sources */,
+				E0E9FACF22E1A55E00CF567B /* RWVideoProtocol.swift in Sources */,
 				E031925C22CB128800E7FA61 /* AppDelegate.swift in Sources */,
+				E0E9FAD222E1C39A00CF567B /* RWVideoGestureHandler.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
