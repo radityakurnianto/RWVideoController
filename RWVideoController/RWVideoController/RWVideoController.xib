@@ -12,6 +12,7 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="RWVideoController" customModule="RWVideoController" customModuleProvider="target">
             <connections>
+                <outlet property="bufferIndicator" destination="Q9D-OI-hwf" id="fKX-NL-lSk"/>
                 <outlet property="controlButton" destination="DSC-4K-loE" id="zx8-Ss-4nF"/>
                 <outlet property="controlFullscreenButton" destination="b7f-rP-UY8" id="KXl-yh-beg"/>
                 <outlet property="controlLayerView" destination="ohg-Je-sdC" id="rhb-TV-odO"/>
@@ -80,17 +81,22 @@
                             <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <nil key="highlightedColor"/>
                         </label>
+                        <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" animating="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="Q9D-OI-hwf">
+                            <rect key="frame" x="188.5" y="390.5" width="37" height="37"/>
+                        </activityIndicatorView>
                     </subviews>
                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     <constraints>
                         <constraint firstItem="Jtw-Ua-nhc" firstAttribute="top" secondItem="ohg-Je-sdC" secondAttribute="top" constant="16" id="27C-nd-GI0"/>
                         <constraint firstAttribute="bottom" secondItem="bAf-i5-AvQ" secondAttribute="bottom" constant="16" id="2eg-4E-aMq"/>
+                        <constraint firstItem="Q9D-OI-hwf" firstAttribute="centerX" secondItem="ohg-Je-sdC" secondAttribute="centerX" id="CPg-SB-1Sg"/>
                         <constraint firstAttribute="trailing" secondItem="Jtw-Ua-nhc" secondAttribute="trailing" constant="16" id="DLe-sx-kf2"/>
                         <constraint firstItem="gog-Mx-0tc" firstAttribute="leading" secondItem="Nap-Gb-Gs2" secondAttribute="trailing" constant="16" id="ENg-OQ-8CY"/>
                         <constraint firstItem="b7f-rP-UY8" firstAttribute="top" secondItem="ohg-Je-sdC" secondAttribute="top" constant="16" id="O8g-MP-rTX"/>
                         <constraint firstAttribute="bottom" secondItem="gog-Mx-0tc" secondAttribute="bottom" constant="10" id="XA4-4n-OWF"/>
                         <constraint firstItem="DSC-4K-loE" firstAttribute="centerY" secondItem="ohg-Je-sdC" secondAttribute="centerY" id="YAn-5e-ubH"/>
                         <constraint firstItem="Nap-Gb-Gs2" firstAttribute="leading" secondItem="ohg-Je-sdC" secondAttribute="leading" constant="16" id="YKy-nN-axz"/>
+                        <constraint firstItem="Q9D-OI-hwf" firstAttribute="centerY" secondItem="ohg-Je-sdC" secondAttribute="centerY" id="eXB-Gc-5Uk"/>
                         <constraint firstItem="DSC-4K-loE" firstAttribute="centerX" secondItem="ohg-Je-sdC" secondAttribute="centerX" id="fiM-0q-akB"/>
                         <constraint firstAttribute="trailing" secondItem="bAf-i5-AvQ" secondAttribute="trailing" constant="16" id="iyr-OP-yu0"/>
                         <constraint firstItem="bAf-i5-AvQ" firstAttribute="leading" secondItem="gog-Mx-0tc" secondAttribute="trailing" constant="16" id="n0D-Cg-axB"/>

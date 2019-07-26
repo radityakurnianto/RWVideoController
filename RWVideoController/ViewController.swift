@@ -20,7 +20,9 @@ class ViewController: UIViewController {
             ["240p": "http://vod.cnnindonesia.com/mc/_definst_/smil:http/mc/video/detiktv/videoservice/CNN/2019/07/02//9a87b70a17934677baa909c6f1b7e495.smil/playlist.m3u8"]
         ]
         
-        let livestream = RWVideoController(videoUrl: "https://live.cnbcindonesia.com/livecnbc/smil:cnbctv.smil/playlist.m3u8")
+        let url = "https://www.youtube.com/watch?v=0VbTT5GUqBk"
+//        let url = "https://live.cnbcindonesia.com/livecnbc/smil:cnbctv.smil/playlist.m3u8"
+        let livestream = RWVideoController(videoUrl: url)
         
         addChild(livestream)
         self.view.addSubview(livestream.view)
