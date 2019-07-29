@@ -30,6 +30,7 @@ enum ScreenState {
 }
 
 enum Observer: String {
+    case status = "status"
     case bufferEmpty = "playbackBufferEmpty"
     case likelyToKeepUp = "playbackLikelyToKeepUp"
     case bufferFull = "playbackBufferFull"
@@ -234,6 +235,7 @@ extension RWVideoController {
         self.videoLayer = AVPlayerLayer(player: videoPlayer)
         self.videoLayer?.frame = self.controlLayerView.frame
         
+        self.videoItem?.addObserver(self, forKeyPath: Observer.status.rawValue, options: .new, context: nil)
         self.videoItem?.addObserver(self, forKeyPath: Observer.bufferEmpty.rawValue, options: .new, context: nil)
         self.videoItem?.addObserver(self, forKeyPath: Observer.likelyToKeepUp.rawValue, options: .new, context: nil)
         self.videoItem?.addObserver(self, forKeyPath: Observer.bufferFull.rawValue, options: .new, context: nil)
@@ -255,21 +257,23 @@ extension RWVideoController {
     }
     
     fileprivate func play() {
+        stopTimer()
         guard let player = self.videoPlayer else { return }
         player.play()
         controlButton.setTitle("Pause", for: .normal)
         videoState = .played
-        defineActionFor(state: videoState)
         delegate?.videoStateDidChange(self, state: videoState)
+        runTimer()
     }
     
     fileprivate func pause() {
+        stopTimer()
         guard let player = self.videoPlayer else { return }
         player.pause()
         controlButton.setTitle("Play", for: .normal)
         videoState = .paused
-        defineActionFor(state: videoState)
         delegate?.videoStateDidChange(self, state: videoState)
+        runTimer()
     }
     
     fileprivate func seekPlayhead(to: CMTime) {
@@ -312,8 +316,34 @@ extension RWVideoController {
     
     internal override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if object is AVPlayerItem {
+            guard let playerItem = object as? AVPlayerItem else { return }
+            
             switch keyPath {
-                case .bufferEmpty.raw
+            case Observer.bufferEmpty.rawValue:
+                self.bufferIndicator.startAnimating()
+                self.controlButton.isHidden = true
+            case Observer.bufferFull.rawValue:
+                self.bufferIndicator.stopAnimating()
+                self.controlButton.isHidden = false
+            case Observer.likelyToKeepUp.rawValue:
+                self.bufferIndicator.stopAnimating()
+                self.controlButton.isHidden = false
+            case Observer.status.rawValue:
+                switch playerItem.status {
+                case .unknown:
+                    self.controlButton.setTitle("Retry", for: .normal)
+                    self.controlButton.isHidden = false
+                case .failed:
+                    self.controlButton.setTitle("Retry", for: .normal)
+                    self.controlButton.isHidden = false
+                case .readyToPlay:
+                    self.controlButton.isHidden = false
+                    print("playerItem readyToPlay")
+                @unknown default:
+                    print("playerItem unknown")
+                }
+            default:
+                print("do nothing")
             }
         }
     }
@@ -375,20 +405,12 @@ extension RWVideoController {
             timeObserverToken = player.addPeriodicTimeObserver(forInterval: CMTimeMakeWithSeconds(1, preferredTimescale: 1), queue: DispatchQueue.main) { (timeInterval) in
                 guard let playerItem = player.currentItem else {
                     self.videoState = .failed
-                    self.defineActionFor(state: self.videoState)
-                    return
-                }
-                
-                if playerItem.isPlaybackBufferEmpty {
-                    self.videoState = .buffer
-                    self.defineActionFor(state: self.videoState)
                     return
                 }
                 
                 if playerItem.status == .readyToPlay {
                     if self.sliderState == .sliderIdle {
                         self.videoState = .ready
-                        self.defineActionFor(state: self.videoState)
                         let currentDuration = CMTimeGetSeconds(player.currentTime())
                         self.currentPlayhead = player.currentTime()
                         self.controlSlider.setValue(Float(currentDuration), animated: true)
@@ -398,7 +420,6 @@ extension RWVideoController {
                     }
                 } else if playerItem.status == .failed {
                     self.videoState = .failed
-                    self.defineActionFor(state: self.videoState)
                 }
             }
         } else {
@@ -435,47 +456,6 @@ extension RWVideoController {
                 self.sliderState = .sliderIdle
                 self.delegate?.video(self, sliderState: self.sliderState)
             }
-        }
-    }
-    
-    fileprivate func defineActionFor(state: PlayerState) -> Void {
-        switch state {
-        case .buffer:
-            controlButton.setTitle("", for: .normal)
-            controlButton.isHidden = true
-            bufferIndicator.isHidden = false
-            bufferIndicator.startAnimating()
-            print("state_buffer")
-        case .failed:
-            self.controlButton.setTitle("Video failed to play. Retru", for: .normal)
-            controlButton.isHidden = false
-            bufferIndicator.isHidden = true
-            bufferIndicator.stopAnimating()
-            print("state_failed")
-        case .ready:
-            self.controlButton.setTitle("Play", for: .normal)
-            controlButton.isHidden = false
-            bufferIndicator.isHidden = true
-            bufferIndicator.stopAnimating()
-            print("state_ready")
-        case .paused:
-            self.controlButton.setTitle("Pause", for: .normal)
-            controlButton.isHidden = false
-            bufferIndicator.isHidden = true
-            bufferIndicator.stopAnimating()
-            print("state_pause")
-        case .finished:
-            self.controlButton.setTitle("Replay", for: .normal)
-            controlButton.isHidden = false
-            bufferIndicator.isHidden = true
-            bufferIndicator.stopAnimating()
-            print("state_replay")
-        default:
-            self.controlButton.setTitle("Play", for: .normal)
-            controlButton.isHidden = false
-            bufferIndicator.isHidden = true
-            bufferIndicator.stopAnimating()
-            print("state_play")
         }
     }
 }

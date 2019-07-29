@@ -31,6 +31,7 @@ class ViewController: UIViewController {
         
         let video = RWVideoController(defaultVideo: "http://vod.cnnindonesia.com/mc/_definst_/smil:http/mc/video/detiktv/videoservice/CNN/2019/07/02//9a87b70a17934677baa909c6f1b7e495.smil/playlist.m3u8", qualities: quality)
         video.delegate = self
+        video.autoplay = true
         addChild(video)
         self.view.addSubview(video.view)
         video.view.frame = CGRect(x: 0, y: (self.view.frame.width * 0.5625) + 50, width: self.view.frame.width, height: self.view.frame.width * 0.5625)
