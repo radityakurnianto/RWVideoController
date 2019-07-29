@@ -198,6 +198,9 @@ class RWVideoController: UIViewController {
     }
     
     @objc func playerDidFinish() -> Void {
+        self.controlButton.setTitle("Replay", for: .normal)
+        self.videoState = .finished
+        self.showControl()
         delegate?.video(didFinishPlaying: self)
     }
     
