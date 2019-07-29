@@ -262,9 +262,13 @@ extension RWVideoController {
     }
     
     fileprivate func play() {
-        stopTimer()
         guard let player = self.videoPlayer else { return }
         player.play()
+        
+        if videoState == .finished {
+            seekPlayhead(to: .zero)
+        }
+        stopTimer()
         controlButton.setTitle("Pause", for: .normal)
         videoState = .played
         delegate?.videoStateDidChange(self, state: videoState)
