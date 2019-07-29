@@ -249,7 +249,9 @@ extension RWVideoController {
     }
     
     func runTimer() -> Void {
-        timer = Timer.scheduledTimer(timeInterval: timerDuration, target: self, selector: #selector(hideControl), userInfo: nil, repeats: false)
+        if videoState == .played {
+            timer = Timer.scheduledTimer(timeInterval: timerDuration, target: self, selector: #selector(hideControl), userInfo: nil, repeats: false)
+        }
     }
     
     func stopTimer() -> Void {
@@ -322,22 +324,34 @@ extension RWVideoController {
             case Observer.bufferEmpty.rawValue:
                 self.bufferIndicator.startAnimating()
                 self.controlButton.isHidden = true
+                self.videoState = .buffer
+                self.showControl()
             case Observer.bufferFull.rawValue:
                 self.bufferIndicator.stopAnimating()
                 self.controlButton.isHidden = false
+                self.videoState = .played
+                self.showControl()
             case Observer.likelyToKeepUp.rawValue:
                 self.bufferIndicator.stopAnimating()
                 self.controlButton.isHidden = false
+                self.videoState = .played
+                self.showControl()
             case Observer.status.rawValue:
                 switch playerItem.status {
                 case .unknown:
                     self.controlButton.setTitle("Retry", for: .normal)
                     self.controlButton.isHidden = false
+                    self.videoState = .failed
+                    self.showControl()
                 case .failed:
                     self.controlButton.setTitle("Retry", for: .normal)
                     self.controlButton.isHidden = false
+                    self.videoState = .failed
+                    self.showControl()
                 case .readyToPlay:
                     self.controlButton.isHidden = false
+                    self.videoState = .ready
+                    self.showControl()
                     print("playerItem readyToPlay")
                 @unknown default:
                     print("playerItem unknown")
