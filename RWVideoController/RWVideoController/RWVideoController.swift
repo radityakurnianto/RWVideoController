@@ -154,11 +154,12 @@ class RWVideoController: UIViewController {
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(true)
+        self.videoItem?.removeObserver(self, forKeyPath: Observer.status.rawValue)
+        self.videoItem?.removeObserver(self, forKeyPath: Observer.bufferEmpty.rawValue)
+        self.videoItem?.removeObserver(self, forKeyPath: Observer.likelyToKeepUp.rawValue)
+        self.videoItem?.removeObserver(self, forKeyPath: Observer.bufferFull.rawValue)
+        NotificationCenter.default.removeObserver(self, name: UIDevice.orientationDidChangeNotification, object: nil)
         NotificationCenter.default.removeObserver(self)
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
     }
     
     override func viewDidLayoutSubviews() {
@@ -169,6 +170,11 @@ class RWVideoController: UIViewController {
     }
     
     deinit {
+        self.videoItem?.removeObserver(self, forKeyPath: Observer.status.rawValue)
+        self.videoItem?.removeObserver(self, forKeyPath: Observer.bufferEmpty.rawValue)
+        self.videoItem?.removeObserver(self, forKeyPath: Observer.likelyToKeepUp.rawValue)
+        self.videoItem?.removeObserver(self, forKeyPath: Observer.bufferFull.rawValue)
+        NotificationCenter.default.removeObserver(self, name: UIDevice.orientationDidChangeNotification, object: nil)
         NotificationCenter.default.removeObserver(self)
     }
     
