@@ -46,6 +46,7 @@ class RWVideoController: UIViewController {
     fileprivate var fullscreenController: RWVideoController?
     fileprivate var timer = Timer()
     fileprivate let timerDuration = 2.0
+    fileprivate var originRect: CGRect = .zero
     
     lazy var tap: UITapGestureRecognizer = { [unowned self] in
         let gesture = UITapGestureRecognizer(target: self, action: #selector(didTap(sender:)))
@@ -75,6 +76,12 @@ class RWVideoController: UIViewController {
             } else {
                 self.hideControl()
             }
+        }
+    }
+    
+    var statusBarHidden = true {
+        didSet(newValue) {
+            setNeedsStatusBarAppearanceUpdate()
         }
     }
     
@@ -226,6 +233,10 @@ class RWVideoController: UIViewController {
         self.controlLayerView.removeGestureRecognizer(tap)
         self.view.addGestureRecognizer(tap)
     }
+    
+    override var prefersStatusBarHidden: Bool {
+        return statusBarHidden
+    }
 }
 
 // MARK: Setup
@@ -242,6 +253,7 @@ extension RWVideoController {
         self.videoItem?.addObserver(self, forKeyPath: Observer.bufferEmpty.rawValue, options: .new, context: nil)
         self.videoItem?.addObserver(self, forKeyPath: Observer.likelyToKeepUp.rawValue, options: .new, context: nil)
         self.videoItem?.addObserver(self, forKeyPath: Observer.bufferFull.rawValue, options: .new, context: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(orientationDidChange(notification:)), name: UIDevice.orientationDidChangeNotification, object: nil)
         
         guard let layer = self.videoLayer else { return }
         self.view.layer.insertSublayer(layer, at: 0)
@@ -293,34 +305,65 @@ extension RWVideoController {
     }
     
     fileprivate func enterFullscreen() -> Void {
-        guard let videoUrl = self.videoUrlString else { return }
-        
         DispatchQueue.main.async {
-            self.fullscreenController = RWVideoController(defaultVideo: videoUrl, qualities: self.videoQualities)
-            self.fullscreenController?.delegate = self.delegate
-            self.fullscreenController?.videoLayer?.frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.width * 0.5625)
-            self.fullscreenController?.screenState = .full
-            self.fullscreenController?.seekPlayhead(to: self.currentPlayhead)
-            
-            self.pause()
-            self.delegate?.videoDidEnterFullscreen()
-            
-            if let controller = self.fullscreenController {
-                self.parent?.present(controller, animated: true, completion: nil)
-            }
+            UIView.animate(withDuration: 0.3, animations: {
+                self.statusBarHidden = true
+                self.originRect = self.view.frame
+                self.view.frame = UIScreen.main.bounds
+                self.screenState = .full
+                self.controlFullscreenButton.setTitle(self.screenState == .normal ? "Fullscreen" : "Exit fullscreen", for: .normal)
+                self.delegate?.videoDidEnterFullscreen()
+            })
         }
     }
     
     fileprivate func exitFullscreen() -> Void {
-        screenState = .normal
-        delegate?.videoDidExitFullscreen()
-        self.pause()
-        self.dismiss(animated: true) {
-            self.fullscreenController?.delegate = nil
-            self.fullscreenController = nil
+        UIView.animate(withDuration: 0.3) {
+            self.statusBarHidden = false
+            self.view.transform = .identity
+            self.view.frame = self.originRect
+            self.screenState = .normal
             self.delegate?.videoDidExitFullscreen()
-            UIDevice.current.setValue(Int(UIInterfaceOrientation.portrait.rawValue), forKey: "orientation")
+            self.controlFullscreenButton.setTitle(self.screenState == .normal ? "Fullscreen" : "Exit fullscreen", for: .normal)
         }
+    }
+    
+    @objc func orientationDidChange(notification: NotificationCenter) -> Void {
+        if screenState == .normal {
+            return
+        }
+        
+        let orientation = UIDevice.current.orientation
+        let screenRect = UIScreen.main.bounds
+        
+        switch orientation {
+        case .landscapeLeft:
+            UIView.animate(withDuration: 0.2) {
+                let rotationDegrees =  90.0
+                let rotationAngle = CGFloat(rotationDegrees * .pi / 180.0)
+
+                self.view.transform = CGAffineTransform(rotationAngle: rotationAngle)
+                self.view.frame = CGRect(x: 0, y: 0, width: screenRect.size.width, height: screenRect.size.height)
+            }
+            print("orientation_landscapeLeft")
+            break
+        case .landscapeRight:
+            let rotationDegrees =  -90.0
+            let rotationAngle = CGFloat(rotationDegrees * .pi / 180.0)
+            
+            self.view.transform = CGAffineTransform(rotationAngle: rotationAngle)
+            self.view.frame = CGRect(x: 0, y: 0, width: screenRect.size.width, height: screenRect.size.height)
+            print("orientation_landscapeRight")
+            break
+        default:
+            UIView.animate(withDuration: 0.2) {
+                self.view.transform = .identity
+                self.view.frame = screenRect
+            }
+            
+            print("orientation_force_portrait")
+        }
+        
     }
     
     internal override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
@@ -520,32 +563,5 @@ extension RWVideoController: RWGestureProtocol {
         } else {
             controlShow = true
         }
-    }
-}
-
-// MARK: app delegate
-extension AppDelegate {
-    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
-        if let rootViewController = self.topViewControllerWithRootViewController(rootViewController: window?.rootViewController) as? RWVideoController {
-            if rootViewController.responds(to: #selector(RWVideoController.canRotate)) {
-                // Unlock landscape view orientations for this view controller
-                return .allButUpsideDown
-            }
-        }
-        
-        // Only allow portrait (standard behaviour)
-        return .portrait;
-    }
-    
-    func topViewControllerWithRootViewController(rootViewController: UIViewController!) -> UIViewController? {
-        if (rootViewController == nil) { return nil }
-        if rootViewController.isKind(of: UITabBarController.self) {
-            return topViewControllerWithRootViewController(rootViewController: (rootViewController as! UITabBarController).selectedViewController)
-        } else if (rootViewController.isKind(of: UINavigationController.self)) {
-            return topViewControllerWithRootViewController(rootViewController: (rootViewController as! UINavigationController).visibleViewController)
-        } else if (rootViewController.presentedViewController != nil) {
-            return topViewControllerWithRootViewController(rootViewController: rootViewController.presentedViewController)
-        }
-        return rootViewController
     }
 }
