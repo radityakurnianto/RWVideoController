@@ -330,6 +330,7 @@ extension RWVideoController {
             self.view.frame = self.originRect
             self.screenState = .normal
             self.delegate?.videoDidExitFullscreen()
+            self.originRect = .zero
             self.controlFullscreenButton.setTitle(self.screenState == .normal ? "Fullscreen" : "Exit fullscreen", for: .normal)
         }
     }
