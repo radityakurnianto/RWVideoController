@@ -11,6 +11,12 @@ import CoreMedia
 
 class ViewController: UIViewController {
     
+    var statusBarHidden = false {
+        didSet {
+            setNeedsStatusBarAppearanceUpdate()
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = .red
@@ -24,10 +30,10 @@ class ViewController: UIViewController {
 //        let url = "https://live.cnbcindonesia.com/livecnbc/smil:cnbctv.smil/playlist.m3u8"
         let livestream = RWVideoController(videoUrl: url)
         
-        addChild(livestream)
-        self.view.addSubview(livestream.view)
-        livestream.view.frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.width * 0.5625)
-        livestream.didMove(toParent: self)
+//        addChild(livestream)
+//        self.view.addSubview(livestream.view)
+//        livestream.view.frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.width * 0.5625)
+//        livestream.didMove(toParent: self)
         
         let video = RWVideoController(defaultVideo: "http://vod.cnnindonesia.com/mc/_definst_/smil:http/mc/video/detiktv/videoservice/CNN/2019/07/02//9a87b70a17934677baa909c6f1b7e495.smil/playlist.m3u8", qualities: quality)
         video.delegate = self
@@ -41,6 +47,14 @@ class ViewController: UIViewController {
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return .portrait
     }
+    
+    override var prefersStatusBarHidden: Bool {
+        return statusBarHidden
+    }
+    
+    override var preferredStatusBarUpdateAnimation: UIStatusBarAnimation {
+        return .slide
+    }
 }
 
 extension ViewController: RWVideoDelegate {
@@ -49,10 +63,12 @@ extension ViewController: RWVideoDelegate {
     }
     
     func videoDidEnterFullscreen() {
+        self.statusBarHidden = true
         print("videoDidEnterFullscreen")
     }
     
     func videoDidExitFullscreen() {
+        self.statusBarHidden = false
         print("videoDidExitFullscreen")
     }
     

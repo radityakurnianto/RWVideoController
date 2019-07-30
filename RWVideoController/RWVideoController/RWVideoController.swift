@@ -79,12 +79,6 @@ class RWVideoController: UIViewController {
         }
     }
     
-    var statusBarHidden = true {
-        didSet(newValue) {
-            setNeedsStatusBarAppearanceUpdate()
-        }
-    }
-    
     @IBOutlet weak private var startTimeLabel: UILabel!
     @IBOutlet weak private var endTimeLabel: UILabel!
     @IBOutlet weak private var controlShadowView: UIView!
@@ -239,10 +233,6 @@ class RWVideoController: UIViewController {
         self.controlLayerView.removeGestureRecognizer(tap)
         self.view.addGestureRecognizer(tap)
     }
-    
-    override var prefersStatusBarHidden: Bool {
-        return statusBarHidden
-    }
 }
 
 // MARK: Setup
@@ -313,7 +303,7 @@ extension RWVideoController {
     fileprivate func enterFullscreen() -> Void {
         DispatchQueue.main.async {
             UIView.animate(withDuration: 0.3, animations: {
-                self.statusBarHidden = true
+                
                 self.originRect = self.view.frame
                 self.view.frame = UIScreen.main.bounds
                 self.screenState = .full
@@ -325,7 +315,6 @@ extension RWVideoController {
     
     fileprivate func exitFullscreen() -> Void {
         UIView.animate(withDuration: 0.3) {
-            self.statusBarHidden = false
             self.view.transform = .identity
             self.view.frame = self.originRect
             self.screenState = .normal
