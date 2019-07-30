@@ -91,6 +91,7 @@ class RWVideoController: UIViewController {
     @IBOutlet weak private var bufferIndicator: UIActivityIndicatorView!
     @IBOutlet weak private var controlQualityViewBottomConstraint: NSLayoutConstraint!
     @IBOutlet weak private var controlQualityViewHeightConstraint: NSLayoutConstraint!
+    @IBOutlet weak var playerView: UIView!
     
     convenience init(videoUrl: String) {
         self.init()
@@ -160,7 +161,7 @@ class RWVideoController: UIViewController {
         super.viewDidLayoutSubviews()
         
         guard let layer = self.videoLayer else { return }
-        layer.frame = self.controlLayerView.frame
+        layer.frame = self.playerView.frame
     }
     
     deinit {
@@ -243,7 +244,7 @@ extension RWVideoController {
         self.videoItem = AVPlayerItem(url: videoUrl)
         self.videoPlayer = AVPlayer(playerItem: self.videoItem)
         self.videoLayer = AVPlayerLayer(player: videoPlayer)
-        self.videoLayer?.frame = self.controlLayerView.frame
+        self.videoLayer?.frame = self.playerView.frame
         
         self.videoItem?.addObserver(self, forKeyPath: Observer.status.rawValue, options: .new, context: nil)
         self.videoItem?.addObserver(self, forKeyPath: Observer.bufferEmpty.rawValue, options: .new, context: nil)
@@ -252,7 +253,7 @@ extension RWVideoController {
         NotificationCenter.default.addObserver(self, selector: #selector(orientationDidChange(notification:)), name: UIDevice.orientationDidChangeNotification, object: nil)
         
         guard let layer = self.videoLayer else { return }
-        self.view.layer.insertSublayer(layer, at: 0)
+        self.playerView.layer.insertSublayer(layer, at: 0)
         
         self.setupSlider()
         bufferIndicator.stopAnimating()
