@@ -260,7 +260,6 @@ extension RWVideoController {
         
         guard let layer = self.videoLayer else { return }
         self.playerView.layer.insertSublayer(layer, at: 0)
-        self.playerView.backgroundColor = .blue
         
         self.setupSlider()
         bufferIndicator.stopAnimating()
@@ -324,7 +323,7 @@ extension RWVideoController {
                 self.playerView.removeFromSuperview()
                 window.addSubview(self.playerView)
                 
-                // 3. adjust autolayout according to container
+                // 3. adjust autolayout according to window
                 self.playerView.translatesAutoresizingMaskIntoConstraints = true
                 self.playerView.frame = window.frame
                 
@@ -371,7 +370,7 @@ extension RWVideoController {
                 let rotationDegrees =  90.0
                 let rotationAngle = CGFloat(rotationDegrees * .pi / 180.0)
 
-                // 1. transfor playerview
+                // 1. transform playerview
                 self.playerView.transform = CGAffineTransform(rotationAngle: rotationAngle)
                 
                 // 2. adjust playerView autolayout
@@ -438,7 +437,6 @@ extension RWVideoController {
                     self.controlButton.isHidden = false
                     self.videoState = .ready
                     self.showControl()
-                    print("playerItem readyToPlay")
                 @unknown default:
                     print("playerItem unknown")
                 }

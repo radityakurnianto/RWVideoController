@@ -27,7 +27,6 @@ class VideoCell: UITableViewCell {
             
             video = RWVideoController(defaultVideo: "http://vod.cnnindonesia.com/mc/_definst_/smil:http/mc/video/detiktv/videoservice/CNN/2019/07/02//9a87b70a17934677baa909c6f1b7e495.smil/playlist.m3u8", qualities: quality)
             video?.autoplay = true
-            
             contentView.addSubview(video!.view)
             video!.view.frame = CGRect(x: 0, y: 0, width: contentView.frame.width, height: contentView.frame.width * 0.5625)
         }
