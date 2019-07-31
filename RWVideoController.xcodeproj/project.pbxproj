@@ -14,6 +14,10 @@
 		E031926622CB128A00E7FA61 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E031926422CB128A00E7FA61 /* LaunchScreen.storyboard */; };
 		E031927122CB199F00E7FA61 /* RWVideoController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E031926F22CB199F00E7FA61 /* RWVideoController.swift */; };
 		E031927222CB199F00E7FA61 /* RWVideoController.xib in Resources */ = {isa = PBXBuildFile; fileRef = E031927022CB199F00E7FA61 /* RWVideoController.xib */; };
+		E0574E4222F0340E00C14D17 /* StandartCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0574E4022F0340E00C14D17 /* StandartCell.swift */; };
+		E0574E4322F0340E00C14D17 /* StandartCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E0574E4122F0340E00C14D17 /* StandartCell.xib */; };
+		E0574E4622F0344D00C14D17 /* VideoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0574E4422F0344D00C14D17 /* VideoCell.swift */; };
+		E0574E4722F0344D00C14D17 /* VideoCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E0574E4522F0344D00C14D17 /* VideoCell.xib */; };
 		E0B26DC522E96099006302D5 /* RWTimeFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0B26DC422E96099006302D5 /* RWTimeFormatter.swift */; };
 		E0D7FD9E22CC650E0060908D /* TestViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0D7FD9D22CC650E0060908D /* TestViewController.swift */; };
 		E0E9FACF22E1A55E00CF567B /* RWVideoProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0E9FACE22E1A55E00CF567B /* RWVideoProtocol.swift */; };
@@ -30,6 +34,10 @@
 		E031926722CB128A00E7FA61 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E031926F22CB199F00E7FA61 /* RWVideoController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RWVideoController.swift; sourceTree = "<group>"; };
 		E031927022CB199F00E7FA61 /* RWVideoController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = RWVideoController.xib; sourceTree = "<group>"; };
+		E0574E4022F0340E00C14D17 /* StandartCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandartCell.swift; sourceTree = "<group>"; };
+		E0574E4122F0340E00C14D17 /* StandartCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = StandartCell.xib; sourceTree = "<group>"; };
+		E0574E4422F0344D00C14D17 /* VideoCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCell.swift; sourceTree = "<group>"; };
+		E0574E4522F0344D00C14D17 /* VideoCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = VideoCell.xib; sourceTree = "<group>"; };
 		E0B26DC422E96099006302D5 /* RWTimeFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RWTimeFormatter.swift; sourceTree = "<group>"; };
 		E0D7FD9D22CC650E0060908D /* TestViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestViewController.swift; sourceTree = "<group>"; };
 		E0E9FACE22E1A55E00CF567B /* RWVideoProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RWVideoProtocol.swift; sourceTree = "<group>"; };
@@ -74,6 +82,10 @@
 				E031926722CB128A00E7FA61 /* Info.plist */,
 				E0E9FAD022E1A5A900CF567B /* RWVideoController */,
 				E0D7FD9D22CC650E0060908D /* TestViewController.swift */,
+				E0574E4022F0340E00C14D17 /* StandartCell.swift */,
+				E0574E4122F0340E00C14D17 /* StandartCell.xib */,
+				E0574E4422F0344D00C14D17 /* VideoCell.swift */,
+				E0574E4522F0344D00C14D17 /* VideoCell.xib */,
 			);
 			path = RWVideoController;
 			sourceTree = "<group>";
@@ -150,6 +162,8 @@
 			files = (
 				E031926622CB128A00E7FA61 /* LaunchScreen.storyboard in Resources */,
 				E031926322CB128A00E7FA61 /* Assets.xcassets in Resources */,
+				E0574E4322F0340E00C14D17 /* StandartCell.xib in Resources */,
+				E0574E4722F0344D00C14D17 /* VideoCell.xib in Resources */,
 				E031927222CB199F00E7FA61 /* RWVideoController.xib in Resources */,
 				E031926122CB128800E7FA61 /* Main.storyboard in Resources */,
 			);
@@ -164,10 +178,12 @@
 			files = (
 				E031927122CB199F00E7FA61 /* RWVideoController.swift in Sources */,
 				E031925E22CB128800E7FA61 /* ViewController.swift in Sources */,
+				E0574E4622F0344D00C14D17 /* VideoCell.swift in Sources */,
 				E0D7FD9E22CC650E0060908D /* TestViewController.swift in Sources */,
 				E0E9FACF22E1A55E00CF567B /* RWVideoProtocol.swift in Sources */,
 				E031925C22CB128800E7FA61 /* AppDelegate.swift in Sources */,
 				E0B26DC522E96099006302D5 /* RWTimeFormatter.swift in Sources */,
+				E0574E4222F0340E00C14D17 /* StandartCell.swift in Sources */,
 				E0E9FAD222E1C39A00CF567B /* RWVideoGestureHandler.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -56,6 +56,12 @@ class RWVideoController: UIViewController {
         return gesture
         }()
     
+    lazy var container: UIView = { [unowned self] in
+        let view = UIView(frame: UIScreen.main.bounds)
+        view.backgroundColor = .red
+        return view
+    }()
+    
     var videoState: PlayerState = .ready
     var sliderState: SliderState = .sliderIdle
     var screenState: ScreenState = .normal
@@ -224,7 +230,7 @@ class RWVideoController: UIViewController {
         self.controlLayerView.alpha = 1.0
         self.controlShadowView.alpha = 0.5
         self.controlLayerView.addGestureRecognizer(tap)
-        self.view.removeGestureRecognizer(tap)
+        self.playerView.removeGestureRecognizer(tap)
         self.runTimer()
     }
     
@@ -232,7 +238,7 @@ class RWVideoController: UIViewController {
         self.controlLayerView.alpha = 0.0
         self.controlShadowView.alpha = 0.0
         self.controlLayerView.removeGestureRecognizer(tap)
-        self.view.addGestureRecognizer(tap)
+        self.playerView.addGestureRecognizer(tap)
     }
 }
 
@@ -254,6 +260,7 @@ extension RWVideoController {
         
         guard let layer = self.videoLayer else { return }
         self.playerView.layer.insertSublayer(layer, at: 0)
+        self.playerView.backgroundColor = .blue
         
         self.setupSlider()
         bufferIndicator.stopAnimating()
@@ -304,9 +311,23 @@ extension RWVideoController {
     fileprivate func enterFullscreen() -> Void {
         DispatchQueue.main.async {
             UIView.animate(withDuration: 0.3, animations: {
+                guard let window = UIApplication.shared.keyWindow else {
+                    print("No root view on which to draw")
+                    return
+                }
                 
-                self.originRect = self.view.frame
-                self.view.frame = UIScreen.main.bounds
+                // 1. add container to window
+                window.addSubview(self.container)
+                
+                // 2. remove player view then attach to window
+                self.originRect = self.playerView.frame
+                self.playerView.removeFromSuperview()
+                window.addSubview(self.playerView)
+                
+                // 3. adjust autolayout according to container
+                self.playerView.translatesAutoresizingMaskIntoConstraints = true
+                self.playerView.frame = window.frame
+                
                 self.screenState = .full
                 self.controlFullscreenButton.setTitle(self.screenState == .normal ? "Fullscreen" : "Exit fullscreen", for: .normal)
                 self.delegate?.videoDidEnterFullscreen()
@@ -316,8 +337,19 @@ extension RWVideoController {
     
     fileprivate func exitFullscreen() -> Void {
         UIView.animate(withDuration: 0.3) {
-            self.view.transform = .identity
-            self.view.frame = self.originRect
+            // 1. remove container and playerView from window
+            self.container.removeFromSuperview()
+            self.playerView.removeFromSuperview()
+            
+            // 2. adjust playerView frame to originRect
+            self.playerView.transform = .identity
+            
+            // 3. add playerview to view
+            self.view.addSubview(self.playerView)
+            
+            // 4. adjust autolayout according to view
+            self.playerView.frame = self.originRect
+            
             self.screenState = .normal
             self.delegate?.videoDidExitFullscreen()
             self.originRect = .zero
@@ -339,8 +371,13 @@ extension RWVideoController {
                 let rotationDegrees =  90.0
                 let rotationAngle = CGFloat(rotationDegrees * .pi / 180.0)
 
-                self.view.transform = CGAffineTransform(rotationAngle: rotationAngle)
-                self.view.frame = CGRect(x: 0, y: 0, width: screenRect.size.width, height: screenRect.size.height)
+                // 1. transfor playerview
+                self.playerView.transform = CGAffineTransform(rotationAngle: rotationAngle)
+                
+                // 2. adjust playerView autolayout
+                self.playerView.translatesAutoresizingMaskIntoConstraints = true
+                self.playerView.frame = CGRect(x: 0, y: 0, width: screenRect.size.width, height: screenRect.size.height)
+                self.videoLayer?.frame = self.playerView.bounds
             }
             print("orientation_landscapeLeft")
             break
@@ -348,14 +385,16 @@ extension RWVideoController {
             let rotationDegrees =  -90.0
             let rotationAngle = CGFloat(rotationDegrees * .pi / 180.0)
             
-            self.view.transform = CGAffineTransform(rotationAngle: rotationAngle)
-            self.view.frame = CGRect(x: 0, y: 0, width: screenRect.size.width, height: screenRect.size.height)
+            self.playerView.transform = CGAffineTransform(rotationAngle: rotationAngle)
+            self.playerView.frame = CGRect(x: 0, y: 0, width: screenRect.size.width, height: screenRect.size.height)
+            self.videoLayer?.frame = self.playerView.bounds
             print("orientation_landscapeRight")
             break
         default:
             UIView.animate(withDuration: 0.2) {
-                self.view.transform = .identity
-                self.view.frame = screenRect
+                self.playerView.transform = .identity
+                self.playerView.frame = screenRect
+                self.videoLayer?.frame = self.playerView.bounds
             }
             
             print("orientation_force_portrait")
