@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="tv1-Ni-Pj1">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="4Sn-R7-bmW">
     <device id="retina6_1" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
@@ -10,7 +10,7 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--View Controller-->
+        <!--Item-->
         <scene sceneID="tne-QT-ifu">
             <objects>
                 <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="RWVideoController" customModuleProvider="target" sceneMemberID="viewController">
@@ -20,11 +20,13 @@
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
+                    <tabBarItem key="tabBarItem" title="Item" id="Wp3-3a-8ib"/>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="1576.8115942028987" y="83.705357142857139"/>
         </scene>
-        <!--Test View Controller-->
+        <!--navigation controller-->
         <scene sceneID="Wa7-7w-n3C">
             <objects>
                 <viewController storyboardIdentifier="TestViewController" id="3H5-mf-MNA" customClass="TestViewController" customModule="RWVideoController" customModuleProvider="target" sceneMemberID="viewController">
@@ -46,7 +48,7 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="eH5-ui-2OT"/>
                     </view>
-                    <navigationItem key="navigationItem" id="rNm-5L-odJ"/>
+                    <navigationItem key="navigationItem" title="navigation controller" id="rNm-5L-odJ"/>
                     <connections>
                         <outlet property="tableView" destination="Tjr-KD-J6M" id="aIy-R1-g2K"/>
                     </connections>
@@ -72,6 +74,23 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ay4-f9-AQb" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="131.8840579710145" y="770.75892857142856"/>
+        </scene>
+        <!--Tab Bar Controller-->
+        <scene sceneID="aID-Mz-SLi">
+            <objects>
+                <tabBarController automaticallyAdjustsScrollViewInsets="NO" id="4Sn-R7-bmW" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <tabBar key="tabBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="yvr-2M-gaw">
+                        <autoresizingMask key="autoresizingMask"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </tabBar>
+                    <connections>
+                        <segue destination="BYZ-38-t0r" kind="relationship" relationship="viewControllers" id="NhP-Lp-0Oi"/>
+                    </connections>
+                </tabBarController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="IL7-6S-vD6" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="666.66666666666674" y="83.705357142857139"/>
         </scene>
     </scenes>
 </document>
