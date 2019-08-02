@@ -478,6 +478,7 @@ extension RWVideoController {
         controlQualityView.isHidden = true
         guard let qualities = self.videoQualities else {
             controlQualityButton.isEnabled = false
+            controlQualityButton.isHidden = true
             controlQualityView.isHidden = true
             return
         }
@@ -485,6 +486,7 @@ extension RWVideoController {
         if qualities.count > 0 {
             controlQualityViewHeightConstraint.constant = CGFloat(qualities.count * 44)
             controlQualityButton.isEnabled = true
+            controlQualityButton.isHidden = false
         }
     }
     
