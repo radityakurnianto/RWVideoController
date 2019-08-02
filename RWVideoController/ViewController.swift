@@ -43,6 +43,21 @@ class ViewController: UIViewController {
         video.didMove(toParent: self)
     }
     
+    @IBAction func showAction(_ sender: Any) {
+        let quality = [
+            ["720p": "http://vod.cnnindonesia.com/mc/_definst_/smil:http/mc/video/detiktv/videoservice/CNN/2019/07/02//9a87b70a17934677baa909c6f1b7e495.smil/playlist.m3u8"],
+            ["480p": "http://vod.cnnindonesia.com/mc/_definst_/smil:http/mc/video/detiktv/videoservice/CNN/2019/07/02//9a87b70a17934677baa909c6f1b7e495.smil/playlist.m3u8"],
+            ["240p": "http://vod.cnnindonesia.com/mc/_definst_/smil:http/mc/video/detiktv/videoservice/CNN/2019/07/02//9a87b70a17934677baa909c6f1b7e495.smil/playlist.m3u8"]
+        ]
+        
+        let video = RWVideoController(defaultVideo: "http://vod.cnnindonesia.com/mc/_definst_/smil:http/mc/video/detiktv/videoservice/CNN/2019/07/02//9a87b70a17934677baa909c6f1b7e495.smil/playlist.m3u8", qualities: quality)
+        video.delegate = self
+        video.autoplay = true
+        self.present(video, animated: true) {
+            // do something
+        }
+    }
+    
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return .portrait
     }

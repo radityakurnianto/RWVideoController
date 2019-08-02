@@ -75,6 +75,15 @@ class RWVideoController: UIViewController {
         }
     }
     
+    var presentAsFullscreen: Bool = false {
+        didSet {
+            if presentAsFullscreen {
+                screenState = .full
+                self.controlFullscreenButton.setTitle(screenState == .normal ? "Fullscreen" : "Exit fullscreen", for: .normal)
+            }
+        }
+    }
+    
     var controlShow: Bool = false {
         didSet {
             if controlShow {
@@ -145,12 +154,20 @@ class RWVideoController: UIViewController {
         }
         return nil
     }
+    
+    override var isBeingPresented: Bool {
+        return presentAsFullscreen
+    }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
         self.view.backgroundColor = .black
         self.controlFullscreenButton.setTitle(screenState == .normal ? "Fullscreen" : "Exit fullscreen", for: .normal)
         NotificationCenter.default.addObserver(self, selector: #selector(playerDidFinish), name: .AVPlayerItemDidPlayToEndTime, object: nil)
+        
+        if self.presentingViewController?.presentedViewController == self {
+            presentAsFullscreen = true
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -196,6 +213,10 @@ class RWVideoController: UIViewController {
     }
     
     @IBAction func controllFullscreenAction(_ sender: Any) {
+        if presentAsFullscreen {
+            self.dismiss(animated: true, completion: nil)
+        }
+        
         if screenState == .full {
             exitFullscreen()
         } else {
@@ -209,6 +230,9 @@ class RWVideoController: UIViewController {
     
     @objc func canRotate() -> Void {
         // do nothing
+        presentAsFullscreen = true
+        self.screenState = .full
+        self.controlFullscreenButton.setTitle(self.screenState == .normal ? "Fullscreen" : "Exit fullscreen", for: .normal)
     }
     
     @objc func playerDidFinish() -> Void {
@@ -260,6 +284,7 @@ extension RWVideoController {
         
         guard let layer = self.videoLayer else { return }
         self.playerView.layer.insertSublayer(layer, at: 0)
+        self.playerView.backgroundColor = .black
         
         self.setupSlider()
         bufferIndicator.stopAnimating()
@@ -597,5 +622,32 @@ extension RWVideoController: RWGestureProtocol {
         } else {
             controlShow = true
         }
+    }
+}
+
+// MARK: app delegate
+extension AppDelegate {
+    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        if let rootViewController = self.topViewControllerWithRootViewController(rootViewController: window?.rootViewController) as? RWVideoController {
+            if rootViewController.responds(to: #selector(RWVideoController.canRotate)) {
+                // Unlock landscape view orientations for this view controller
+                return .allButUpsideDown
+            }
+        }
+        
+        // Only allow portrait (standard behaviour)
+        return .portrait;
+    }
+    
+    func topViewControllerWithRootViewController(rootViewController: UIViewController!) -> UIViewController? {
+        if (rootViewController == nil) { return nil }
+        if rootViewController.isKind(of: UITabBarController.self) {
+            return topViewControllerWithRootViewController(rootViewController: (rootViewController as! UITabBarController).selectedViewController)
+        } else if (rootViewController.isKind(of: UINavigationController.self)) {
+            return topViewControllerWithRootViewController(rootViewController: (rootViewController as! UINavigationController).visibleViewController)
+        } else if (rootViewController.presentedViewController != nil) {
+            return topViewControllerWithRootViewController(rootViewController: rootViewController.presentedViewController)
+        }
+        return rootViewController
     }
 }
